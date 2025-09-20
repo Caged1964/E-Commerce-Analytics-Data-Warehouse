@@ -36,7 +36,7 @@ with DAG(
             table="staging_products",
             rows=rows,
             target_fields=["product_id", "name", "category", "price"],
-            replace=True
+            # replace=True
         )
 
     @task
@@ -73,7 +73,6 @@ with DAG(
 
         orders = []
         order_items = []
-        order_item_counter = 1
 
         for _ in range(10):
             order_id = str(random.randint(10000, 99999))
@@ -88,13 +87,11 @@ with DAG(
                 price = product_prices[product_id]
                 total_amount += quantity * price
                 order_items.append((
-                    order_item_counter,
                     order_id,
                     product_id,
                     quantity,
                     price
                 ))
-                order_item_counter += 1
 
             orders.append((
                 order_id,
@@ -113,7 +110,7 @@ with DAG(
         pg_hook.insert_rows(
             table="staging_order_items",
             rows=order_items,
-            target_fields=["order_item_id", "order_id", "product_id", "quantity", "price"]
+            target_fields=["order_id", "product_id", "quantity", "price"]
         )
 
         cursor.close()

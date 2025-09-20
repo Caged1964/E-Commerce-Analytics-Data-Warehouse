@@ -70,7 +70,7 @@ with DAG(
 
     @task
     def load_fact_sales():
-        ok = PostgresHook(postgres_conn_id="pg_connection")
+        pg_hook = PostgresHook(postgres_conn_id="pg_connection")
         insert_query="""
         INSERT INTO fact_sales (order_item_id, order_id, customer_id, product_id, date_id, quantity, unit_price, total_amount)
         SELECT soi.order_item_id,
