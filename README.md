@@ -43,7 +43,7 @@ The result is a star schema you can query for sales analytics.
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/<your-username>/E-Commerce_Analytics_Data_Warehouse.git
+git clone https://github.com/Caged1964/E-Commerce_Analytics_Data_Warehouse.git
 cd E-Commerce_Analytics_Data_Warehouse
 ```
 
