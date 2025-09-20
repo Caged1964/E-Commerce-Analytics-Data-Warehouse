@@ -94,7 +94,7 @@ In the Airflow UI you should see:
 
 - `dag_bootstrap_load`
 - `dag_fetch_api`
-- `dag_transform_analystics` (typo in DAG id is intentional, left as-is)
+- `dag_transform_analytics` 
 
 Run them in order the first time:
 
