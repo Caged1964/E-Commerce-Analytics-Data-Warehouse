@@ -122,12 +122,12 @@ SELECT * FROM dim_products LIMIT 10;
 SELECT * FROM dim_customers LIMIT 10;
 
 -- Fact table with sales totals
-SELECT d.date, p.title, SUM(f.quantity * f.price) AS revenue
+SELECT d.date_id AS date, p.product_name AS title, SUM(f.quantity * f.unit_price) AS revenue
 FROM fact_sales f
 JOIN dim_products p ON f.product_id = p.product_id
 JOIN dim_date d ON f.date_id = d.date_id
-GROUP BY d.date, p.title
-ORDER BY d.date DESC
+GROUP BY d.date_id, p.product_name
+ORDER BY d.date_id DESC
 LIMIT 20;
 ```
 
