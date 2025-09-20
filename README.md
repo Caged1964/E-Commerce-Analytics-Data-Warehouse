@@ -179,38 +179,43 @@ erDiagram
     dim_date      ||--o{ fact_sales : has
 
     dim_customers {
-      int customer_id PK
+      string customer_id PK
       string name
       string email
+      string country
+      date signup_date
     }
 
     dim_products {
-      int product_id PK
+      string product_id PK
       string title
       string category
       numeric price
     }
 
     dim_orders {
-      int order_id PK
+      string order_id PK
+      string customer_id
+      timestamp order_date
       string status
+      numeric total_amount
     }
 
     dim_date {
-      int date_id PK
-      date full_date
+      date date_id PK
       int year
       int month
       int day
     }
 
     fact_sales {
-      int sales_id PK
+      int order_item_id  PK
       int customer_id FK
       int product_id FK
-      int order_id FK
       int date_id FK
+      int order_id 
       int quantity
-      numeric price
+      numeric unit_price
+      numeric total_amount
     }
 ```
