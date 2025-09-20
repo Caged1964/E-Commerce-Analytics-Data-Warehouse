@@ -1,6 +1,6 @@
 -- STAGING TABLES (for raw data)
 CREATE TABLE IF NOT EXISTS staging_orders (
-    order_id VARCHAR(50) PRIMARY KEY,
+    order_id VARCHAR(50),
     customer_id VARCHAR(50),
     order_date TIMESTAMP,
     order_status VARCHAR(50),
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS staging_order_items (
 );
 
 CREATE TABLE IF NOT EXISTS staging_customers (
-    customer_id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50),
     name VARCHAR(100),
     email VARCHAR(100),
     country VARCHAR(100),
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS staging_customers (
 );
 
 CREATE TABLE IF NOT EXISTS staging_products (
-    product_id VARCHAR(50) PRIMARY KEY,
+    product_id VARCHAR(50),
     name VARCHAR(100),
     category VARCHAR(255),
     price NUMERIC(10,2)
