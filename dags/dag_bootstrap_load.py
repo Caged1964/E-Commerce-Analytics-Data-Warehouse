@@ -32,16 +32,10 @@ def load_to_staging(table_name, csv_file, **kwargs):
                 tuple(row)
             )
     else:
-        pk = columns[0]
-        updates = ",".join([f"{col}=EXCLUDED.{col}" for col in columns[1:]])
+        # remove ON CONFLICT logic, just insert rows
         for _, row in df.iterrows():
             cursor.execute(
-                f"""
-                INSERT INTO {table_name} ({colnames})
-                VALUES ({placeholders})
-                ON CONFLICT ({pk})
-                DO UPDATE SET {updates};
-                """,
+                f"INSERT INTO {table_name} ({colnames}) VALUES ({placeholders})",
                 tuple(row)
             )
     conn.commit()

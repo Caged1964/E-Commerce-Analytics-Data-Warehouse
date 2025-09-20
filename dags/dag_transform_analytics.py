@@ -1,9 +1,8 @@
 from airflow import DAG
 from airflow.decorators import task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from datetime import datetime, timedelta
+from datetime import  datetime, timedelta
 import pendulum
-from datetime import timedelta
 
 default_args = {
     "owner": "airflow",
@@ -18,14 +17,20 @@ with DAG(
     start_date=pendulum.now().subtract(days=1),
     schedule="@daily",
     catchup=False
-) as dag : 
+) as dag:
+
     @task
     def load_dim_customers():
         pg_hook = PostgresHook(postgres_conn_id="pg_connection")
-        insert_query="""
+        insert_query = """
         INSERT INTO dim_customers (customer_id, name, email, country, signup_date)
-        SELECT DISTINCT customer_id, name, email, country, signup_date
-        FROM staging_customers
+        WITH ranked_customers AS (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY signup_date DESC) AS rn
+          FROM staging_customers
+        )
+        SELECT customer_id, name, email, country, signup_date
+        FROM ranked_customers
+        WHERE rn = 1
         ON CONFLICT (customer_id) DO UPDATE
         SET name = EXCLUDED.name,
             email = EXCLUDED.email,
@@ -37,10 +42,15 @@ with DAG(
     @task
     def load_dim_products():
         pg_hook = PostgresHook(postgres_conn_id="pg_connection")
-        insert_query="""
+        insert_query = """
         INSERT INTO dim_products (product_id, product_name, category, price)
-        SELECT DISTINCT product_id, name, category, price
-        FROM staging_products
+        WITH ranked_products AS (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY price DESC) AS rn
+          FROM staging_products
+        )
+        SELECT product_id, name, category, price
+        FROM ranked_products
+        WHERE rn = 1
         ON CONFLICT (product_id) DO UPDATE
         SET product_name = EXCLUDED.product_name,
             category = EXCLUDED.category,
@@ -51,10 +61,15 @@ with DAG(
     @task
     def load_dim_orders():
         pg_hook = PostgresHook(postgres_conn_id="pg_connection")
-        insert_query="""
+        insert_query = """
         INSERT INTO dim_orders (order_id, customer_id, order_date, status, total_amount)
-        SELECT DISTINCT order_id, customer_id, order_date, order_status, total_amount
-        FROM staging_orders
+        WITH ranked_orders AS (
+          SELECT *, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY order_date DESC) AS rn
+          FROM staging_orders
+        )
+        SELECT order_id, customer_id, order_date, order_status, total_amount
+        FROM ranked_orders
+        WHERE rn = 1
         ON CONFLICT (order_id) DO UPDATE
         SET customer_id = EXCLUDED.customer_id,
             order_date = EXCLUDED.order_date,
@@ -66,7 +81,7 @@ with DAG(
     @task
     def load_dim_date():
         pg_hook = PostgresHook(postgres_conn_id="pg_connection")
-        insert_query="""
+        insert_query = """
         INSERT INTO dim_date (date_id, day, month, year)
         SELECT DISTINCT order_date::date,
                EXTRACT(DAY FROM order_date),
@@ -80,7 +95,7 @@ with DAG(
     @task
     def load_fact_sales():
         pg_hook = PostgresHook(postgres_conn_id="pg_connection")
-        insert_query="""
+        insert_query = """
         INSERT INTO fact_sales (order_item_id, order_id, customer_id, product_id, date_id, quantity, unit_price, total_amount)
         SELECT soi.order_item_id,
                soi.order_id,
@@ -103,4 +118,4 @@ with DAG(
         """
         pg_hook.run(insert_query)
 
-    load_dim_customers()>>load_dim_products()>>load_dim_orders()>>load_dim_date()>>load_fact_sales()
+    load_dim_customers() >> load_dim_products() >> load_dim_orders() >> load_dim_date() >> load_fact_sales()
