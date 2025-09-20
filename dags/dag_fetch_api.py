@@ -5,11 +5,20 @@ from datetime import datetime, timedelta
 import requests
 import pendulum
 import random
+from datetime import timedelta
 
 FAKESTORE_API = "https://fakestoreapi.com/products"
 
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+}
+
 with DAG(
     dag_id="dag_fetch_api",
+    default_args=default_args,
     start_date=pendulum.now().subtract(days=1),
     schedule="0 6 * * *",
     catchup=False

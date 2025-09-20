@@ -3,9 +3,18 @@ from airflow.decorators import task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from datetime import datetime, timedelta
 import pendulum
+from datetime import timedelta
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+}
 
 with DAG(
-    dag_id="dag_transform_analystics",
+    dag_id="dag_transform_analytics",
+    default_args=default_args,
     start_date=pendulum.now().subtract(days=1),
     schedule="@daily",
     catchup=False

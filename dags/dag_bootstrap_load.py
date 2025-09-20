@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.decorators import task
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from datetime import timedelta
 import pendulum
 import pandas as pd
 import os
@@ -9,6 +10,10 @@ import os
 BASE_PATH = os.path.join(os.environ.get("AIRFLOW_HOME","/opt/airflow"),"include")
 
 def load_to_staging(table_name, csv_file, **kwargs):
+    ALLOWED_TABLES = {"staging_customers","staging_products","staging_orders","staging_order_items"}
+    if table_name not in ALLOWED_TABLES:
+        raise ValueError("Invalid table_name")
+
     pg_hook = PostgresHook(postgres_conn_id='pg_connection')
     df = pd.read_csv(csv_file)
 
@@ -42,8 +47,17 @@ def load_to_staging(table_name, csv_file, **kwargs):
     conn.commit()
 
 ## Defining DAG 
+
+default_args = {
+    "owner": "airflow",
+    "depends_on_past": False,
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+}
+
 with DAG(
-    dag_id='extract_load_dag',
+    dag_id='bootstrap_load_dag',
+    default_args=default_args,
     start_date = pendulum.now().subtract(days=1),
     schedule=None,
     catchup=False
